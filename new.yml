@@ -1,0 +1,27 @@
+---
+- name: create new user
+  hosts: all
+  vars:
+    user_name: satish
+  vars_files:
+    - my_vault.yml
+  tasks:
+    - name: create user
+      user:
+        name: "{{ user_name }}"
+        password: "{{ my_password | password_hash('sha512') }}"
+        shell: /bin/bash
+
+    - name: create ssh dir
+      file: path=/home/{{ user_name }}/.ssh state=directory
+      
+    - name: Add public authorised key
+      copy:
+        src: /home/final/authorized_keys
+        dest: /home/{{ user_name}}/.ssh/
+
+    - name: chown and chmod of ssh dir
+      file: path=/home/{{ user_name }}/.ssh recurse=yes
+            owner={{ user_name }} group={{ user_name }} mode=0700
+            state=directory
+
